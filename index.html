@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>iOS Weather App</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #000;
+    }
+    .container {
+      display: flex;
+      width: 200%;
+      transition: transform 0.6s ease;
+      height: 100vh;
+    }
+    .screen {
+      width: 100vw;
+      height: 100vh;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: white;
+      position: relative;
+    }
+    .weather-screen {
+      background-size: cover;
+      background-position: center;
+    }
+    .weather-info {
+      font-size: 3rem;
+      font-weight: 600;
+      text-align: center;
+      text-shadow: 2px 2px 6px #000;
+    }
+    .clock {
+      font-size: 6rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 6px #000;
+    }
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      padding: 40px;
+    }
+    .app-icon {
+      width: 100px;
+      height: 100px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="container">
+    <!-- Weather Page -->
+    <div class="screen weather-screen" id="weatherScreen">
+      <div class="clock" id="clock">--:--</div>
+      <div class="weather-info" id="weatherInfo">Loading...</div>
+    </div>
+
+    <!-- App Grid Page -->
+    <div class="screen" style="background-color: #111;">
+      <div class="app-grid">
+        <div class="app-icon">App 1</div>
+        <div class="app-icon">App 2</div>
+        <div class="app-icon">App 3</div>
+        <div class="app-icon">App 4</div>
+        <div class="app-icon">App 5</div>
+        <div class="app-icon">App 6</div>
+        <div class="app-icon">App 7</div>
+        <div class="app-icon">App 8</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const weatherScreen = document.getElementById('weatherScreen');
+    const weatherInfo = document.getElementById('weatherInfo');
+    const clock = document.getElementById('clock');
+
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      clock.textContent = `${h}:${m}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    async function getWeather() {
+      try {
+        const apiKey = '6efb5f6d5577a5e8c5928099fa60d3d9'; // Replace with your OpenWeatherMap key
+        const res = await fetch('https://ipapi.co/json');
+        const location = await res.json();
+        const city = location.city;
+
+        const weatherRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`);
+        const data = await weatherRes.json();
+
+        const temp = Math.round(data.main.temp);
+        const condition = data.weather[0].main;
+        weatherInfo.textContent = `${city}\n${temp}°C\n${condition}`;
+
+        let bg;
+        switch (condition.toLowerCase()) {
+          case 'clear': bg = 'url(https://source.unsplash.com/1600x900/?sunny)'; break;
+          case 'clouds': bg = 'url(https://source.unsplash.com/1600x900/?cloudy)'; break;
+          case 'rain': bg = 'url(https://source.unsplash.com/1600x900/?rainy)'; break;
+          case 'snow': bg = 'url(https://source.unsplash.com/1600x900/?snowy)'; break;
+          case 'thunderstorm': bg = 'url(https://source.unsplash.com/1600x900/?storm)'; break;
+          default: bg = 'url(https://source.unsplash.com/1600x900/?weather)';
+        }
+        weatherScreen.style.backgroundImage = bg;
+      } catch (err) {
+        weatherInfo.textContent = "Weather error.";
+      }
+    }
+
+    getWeather();
+
+    // Swipe to switch screens
+    let startX = 0;
+    document.addEventListener("touchstart", e => {
+      startX = e.touches[0].clientX;
+    });
+
+    document.addEventListener("touchend", e => {
+      const endX = e.changedTouches[0].clientX;
+      const deltaX = endX - startX;
+      const container = document.getElementById("container");
+
+      if (deltaX < -50) {
+        container.style.transform = "translateX(-100vw)";
+      } else if (deltaX > 50) {
+        container.style.transform = "translateX(0)";
+      }
+    });
+  </script>
+</body>
+</html>
