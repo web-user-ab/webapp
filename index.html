@@ -2,21 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>iOS Weather App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>iOS StandBy Weather</title>
   <style>
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
       overflow: hidden;
+      background: black;
+      color: white;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #000;
     }
+
     .container {
       display: flex;
-      width: 200%;
-      transition: transform 0.6s ease;
+      flex-direction: row;
+      width: 200vw;
       height: 100vh;
+      touch-action: pan-y;
+      transition: transform 0.3s ease;
     }
+
     .screen {
       width: 100vw;
       height: 100vh;
@@ -25,41 +31,44 @@
       justify-content: center;
       align-items: center;
       flex-direction: column;
-      color: white;
       position: relative;
     }
+
     .weather-screen {
       background-size: cover;
       background-position: center;
     }
+
+    .clock {
+      font-size: 6rem;
+      text-shadow: 2px 2px 6px #000;
+    }
+
     .weather-info {
-      font-size: 3rem;
-      font-weight: 600;
+      font-size: 2rem;
       text-align: center;
       text-shadow: 2px 2px 6px #000;
     }
-    .clock {
-      font-size: 6rem;
-      margin-bottom: 10px;
-      text-shadow: 2px 2px 6px #000;
-    }
+
     .app-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(2, 1fr);
       gap: 20px;
       padding: 40px;
     }
+
     .app-icon {
-      width: 100px;
-      height: 100px;
+      width: 80px;
+      height: 80px;
       background: rgba(255,255,255,0.1);
-      border-radius: 20px;
+      border-radius: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
       font-weight: bold;
-      font-size: 1rem;
+      font-size: 0.9rem;
       text-align: center;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
@@ -73,7 +82,7 @@
       <div class="weather-info" id="weatherInfo">Loading...</div>
     </div>
 
-    <!-- App Grid Page -->
+    <!-- App Library Page -->
     <div class="screen" style="background-color: #111;">
       <div class="app-grid">
         <div class="app-icon">App 1</div>
@@ -92,7 +101,9 @@
     const weatherScreen = document.getElementById('weatherScreen');
     const weatherInfo = document.getElementById('weatherInfo');
     const clock = document.getElementById('clock');
+    const container = document.getElementById('container');
 
+    // Clock Update
     function updateClock() {
       const now = new Date();
       const h = String(now.getHours()).padStart(2, '0');
@@ -102,9 +113,10 @@
     setInterval(updateClock, 1000);
     updateClock();
 
+    // Weather Fetching
     async function getWeather() {
       try {
-        const apiKey = '412d25f1d4a2f451901897d424771ba8'; // Replace with your OpenWeatherMap key
+        const apiKey = '412d25f1d4a2f451901897d424771ba8'; // Replace with your OpenWeatherMap API key
         const res = await fetch('https://ipapi.co/json');
         const location = await res.json();
         const city = location.city;
@@ -133,21 +145,35 @@
 
     getWeather();
 
-    // Swipe to switch screens
+    // Smooth iOS-like swipe behavior
     let startX = 0;
-    document.addEventListener("touchstart", e => {
+    let currentX = 0;
+    let isDragging = false;
+
+    container.addEventListener('touchstart', (e) => {
       startX = e.touches[0].clientX;
+      isDragging = true;
+      container.style.transition = 'none';
     });
 
-    document.addEventListener("touchend", e => {
-      const endX = e.changedTouches[0].clientX;
-      const deltaX = endX - startX;
-      const container = document.getElementById("container");
+    container.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      currentX = e.touches[0].clientX;
+      const deltaX = currentX - startX;
+      container.style.transform = `translateX(${deltaX < 0 ? Math.max(deltaX, -window.innerWidth) : Math.min(deltaX, 0)}px)`;
+    });
 
-      if (deltaX < -50) {
-        container.style.transform = "translateX(-100vw)";
-      } else if (deltaX > 50) {
-        container.style.transform = "translateX(0)";
+    container.addEventListener('touchend', (e) => {
+      isDragging = false;
+      container.style.transition = 'transform 0.3s ease';
+      const deltaX = currentX - startX;
+
+      if (Math.abs(deltaX) > window.innerWidth / 3) {
+        container.style.transform = deltaX < 0 ? 'translateX(-100vw)' : 'translateX(0)';
+      } else {
+        // Snap back
+        const isSecondPage = container.style.transform.includes('-100vw');
+        container.style.transform = isSecondPage ? 'translateX(-100vw)' : 'translateX(0)';
       }
     });
   </script>
