@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>iPod Weather App</title>
   <style>
     * {
@@ -14,6 +14,7 @@
     html, body {
       height: 100%;
       overflow: hidden;
+      background: black;
     }
 
     #wrapper {
@@ -31,19 +32,18 @@
       position: relative;
     }
 
-    /* Home screen (weather) */
     #home {
-      background: url('https://source.unsplash.com/1600x900/?weather') center/cover no-repeat;
+      background: url('https://source.unsplash.com/1600x900/?weather,sky') center/cover no-repeat;
       color: white;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.7);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
     }
 
     #weather {
-      font-size: 2.5rem;
+      font-size: 3rem;
     }
 
     #description {
@@ -51,9 +51,8 @@
       margin-top: 0.5rem;
     }
 
-    /* App Library */
     #apps {
-      background: url('https://source.unsplash.com/1600x900/?technology,abstract') center/cover no-repeat;
+      background: url('https://source.unsplash.com/1600x900/?technology,dark') center/cover no-repeat;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(2, 1fr);
@@ -68,46 +67,54 @@
       height: 60px;
       border-radius: 15px;
       background: white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
       display: flex;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
     }
 
     .app img {
       width: 40px;
       height: 40px;
+      object-fit: contain;
     }
   </style>
 </head>
 <body>
   <div id="wrapper">
-    <!-- Weather Screen -->
     <div class="screen" id="home">
       <div id="weather">Loading...</div>
       <div id="description"></div>
     </div>
 
-    <!-- App Library Screen -->
     <div class="screen" id="apps">
-      <a class="app" href="https://www.youtube.com"><img src="youtube.png" alt="YouTube"></a>
-      <a class="app" href="https://www.tiktok.com"><img src="tiktok.png" alt="TikTok"></a>
-      <a class="app" href="https://discord.com"><img src="discord.png" alt="Discord"></a>
-      <a class="app" href="https://www.apple.com/safari/"><img src="safari.png" alt="Safari"></a>
-      <a class="app" href="https://www.timeanddate.com/worldclock/"><img src="clock.png" alt="Clock"></a>
-      <a class="app" href="https://www.icloud.com/shortcuts"><img src="shortcuts.png" alt="Shortcuts"></a>
+      <a class="app" href="https://youtube.com">
+        <img src="https://img.icons8.com/ios-filled/100/youtube-play.png" alt="YouTube">
+      </a>
+      <a class="app" href="https://tiktok.com">
+        <img src="https://img.icons8.com/ios-filled/100/tiktok--v1.png" alt="TikTok">
+      </a>
+      <a class="app" href="https://discord.com">
+        <img src="https://img.icons8.com/ios-filled/100/discord-logo.png" alt="Discord">
+      </a>
+      <a class="app" href="https://apple.com/safari">
+        <img src="https://img.icons8.com/ios-filled/100/compass--v1.png" alt="Safari">
+      </a>
+      <a class="app" href="https://timeanddate.com/worldclock">
+        <img src="https://img.icons8.com/ios-filled/100/clock.png" alt="Clock">
+      </a>
+      <a class="app" href="https://www.icloud.com/shortcuts">
+        <img src="https://img.icons8.com/ios-filled/100/shortcut.png" alt="Shortcuts">
+      </a>
       <div class="app"></div>
       <div class="app"></div>
     </div>
   </div>
 
-  <!-- JS -->
   <script>
     const wrapper = document.getElementById('wrapper');
-    let startX = 0;
-    let currentX = 0;
-    let isDragging = false;
-    let threshold = window.innerWidth / 4;
+    let startX = 0, currentX = 0, isDragging = false;
 
     wrapper.addEventListener('touchstart', e => {
       startX = e.touches[0].clientX;
@@ -122,20 +129,20 @@
       wrapper.style.transform = `translateX(${dx > 0 ? 0 : dx}px)`;
     });
 
-    wrapper.addEventListener('touchend', e => {
+    wrapper.addEventListener('touchend', () => {
       isDragging = false;
       wrapper.style.transition = 'transform 0.4s ease';
-
-      if (currentX - startX < -threshold) {
+      const dx = currentX - startX;
+      if (dx < -window.innerWidth / 4) {
         wrapper.style.transform = 'translateX(-100vw)';
       } else {
         wrapper.style.transform = 'translateX(0)';
       }
     });
 
-    // Weather
-    const apiKey = '412d25f1d4a2f451901897d424771ba8'; // <<< Replace this with your OpenWeatherMap API key
-    const city = 'Derby'; // Change to your preferred location
+    const apiKey = "412d25f1d4a2f451901897d424771ba8"; // Replace this!
+    const city = "Derby"; // Optional: change to your city
+
     fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`)
       .then(res => res.json())
       .then(data => {
@@ -144,9 +151,9 @@
         document.getElementById('weather').textContent = `${temp}°C`;
         document.getElementById('description').textContent = desc.charAt(0).toUpperCase() + desc.slice(1);
       })
-      .catch(err => {
+      .catch(() => {
         document.getElementById('weather').textContent = 'Failed';
-        console.error(err);
+        document.getElementById('description').textContent = 'Could not fetch';
       });
   </script>
 </body>
