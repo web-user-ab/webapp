@@ -1,181 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>iOS StandBy Weather</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>iPod Weather App</title>
   <style>
-    html, body {
+    * {
       margin: 0;
       padding: 0;
-      overflow: hidden;
-      background: black;
-      color: white;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    .container {
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #wrapper {
       display: flex;
-      flex-direction: row;
       width: 200vw;
       height: 100vh;
+      transition: transform 0.4s ease;
       touch-action: pan-y;
-      transition: transform 0.3s ease;
     }
 
     .screen {
       width: 100vw;
       height: 100vh;
       flex-shrink: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
       position: relative;
     }
 
-    .weather-screen {
-      background-size: cover;
-      background-position: center;
+    /* Home screen (weather) */
+    #home {
+      background: url('https://source.unsplash.com/1600x900/?weather') center/cover no-repeat;
+      color: white;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
 
-    .clock {
-      font-size: 6rem;
-      text-shadow: 2px 2px 6px #000;
+    #weather {
+      font-size: 2.5rem;
     }
 
-    .weather-info {
-      font-size: 2rem;
-      text-align: center;
-      text-shadow: 2px 2px 6px #000;
+    #description {
+      font-size: 1.2rem;
+      margin-top: 0.5rem;
     }
 
-    .app-grid {
+    /* App Library */
+    #apps {
+      background: url('https://source.unsplash.com/1600x900/?technology,abstract') center/cover no-repeat;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(2, 1fr);
       gap: 20px;
       padding: 40px;
+      justify-items: center;
+      align-items: center;
     }
 
-    .app-icon {
-      width: 80px;
-      height: 80px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 18px;
+    .app {
+      width: 60px;
+      height: 60px;
+      border-radius: 15px;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       display: flex;
-      align-items: center;
       justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 0.9rem;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      align-items: center;
+    }
+
+    .app img {
+      width: 40px;
+      height: 40px;
     }
   </style>
 </head>
 <body>
-  <div class="container" id="container">
-    <!-- Weather Page -->
-    <div class="screen weather-screen" id="weatherScreen">
-      <div class="clock" id="clock">--:--</div>
-      <div class="weather-info" id="weatherInfo">Loading...</div>
+  <div id="wrapper">
+    <!-- Weather Screen -->
+    <div class="screen" id="home">
+      <div id="weather">Loading...</div>
+      <div id="description"></div>
     </div>
 
-    <!-- App Library Page -->
-    <div class="screen" style="background-color: #111;">
-      <div class="app-grid">
-        <div class="app-icon">App 1</div>
-        <div class="app-icon">App 2</div>
-        <div class="app-icon">App 3</div>
-        <div class="app-icon">App 4</div>
-        <div class="app-icon">App 5</div>
-        <div class="app-icon">App 6</div>
-        <div class="app-icon">App 7</div>
-        <div class="app-icon">App 8</div>
-      </div>
+    <!-- App Library Screen -->
+    <div class="screen" id="apps">
+      <a class="app" href="https://www.youtube.com"><img src="youtube.png" alt="YouTube"></a>
+      <a class="app" href="https://www.tiktok.com"><img src="tiktok.png" alt="TikTok"></a>
+      <a class="app" href="https://discord.com"><img src="discord.png" alt="Discord"></a>
+      <a class="app" href="https://www.apple.com/safari/"><img src="safari.png" alt="Safari"></a>
+      <a class="app" href="https://www.timeanddate.com/worldclock/"><img src="clock.png" alt="Clock"></a>
+      <a class="app" href="https://www.icloud.com/shortcuts"><img src="shortcuts.png" alt="Shortcuts"></a>
+      <div class="app"></div>
+      <div class="app"></div>
     </div>
   </div>
 
+  <!-- JS -->
   <script>
-    const weatherScreen = document.getElementById('weatherScreen');
-    const weatherInfo = document.getElementById('weatherInfo');
-    const clock = document.getElementById('clock');
-    const container = document.getElementById('container');
-
-    // Clock Update
-    function updateClock() {
-      const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
-      clock.textContent = `${h}:${m}`;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    // Weather Fetching
-    async function getWeather() {
-      try {
-        const apiKey = '412d25f1d4a2f451901897d424771ba8'; // Replace with your OpenWeatherMap API key
-        const res = await fetch('https://ipapi.co/json');
-        const location = await res.json();
-        const city = location.city;
-
-        const weatherRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`);
-        const data = await weatherRes.json();
-
-        const temp = Math.round(data.main.temp);
-        const condition = data.weather[0].main;
-        weatherInfo.textContent = `${city}\n${temp}°C\n${condition}`;
-
-        let bg;
-        switch (condition.toLowerCase()) {
-          case 'clear': bg = 'url(https://source.unsplash.com/1600x900/?sunny)'; break;
-          case 'clouds': bg = 'url(https://source.unsplash.com/1600x900/?cloudy)'; break;
-          case 'rain': bg = 'url(https://source.unsplash.com/1600x900/?rainy)'; break;
-          case 'snow': bg = 'url(https://source.unsplash.com/1600x900/?snowy)'; break;
-          case 'thunderstorm': bg = 'url(https://source.unsplash.com/1600x900/?storm)'; break;
-          default: bg = 'url(https://source.unsplash.com/1600x900/?weather)';
-        }
-        weatherScreen.style.backgroundImage = bg;
-      } catch (err) {
-        weatherInfo.textContent = "Weather error.";
-      }
-    }
-
-    getWeather();
-
-    // Smooth iOS-like swipe behavior
+    const wrapper = document.getElementById('wrapper');
     let startX = 0;
     let currentX = 0;
     let isDragging = false;
+    let threshold = window.innerWidth / 4;
 
-    container.addEventListener('touchstart', (e) => {
+    wrapper.addEventListener('touchstart', e => {
       startX = e.touches[0].clientX;
       isDragging = true;
-      container.style.transition = 'none';
+      wrapper.style.transition = 'none';
     });
 
-    container.addEventListener('touchmove', (e) => {
+    wrapper.addEventListener('touchmove', e => {
       if (!isDragging) return;
       currentX = e.touches[0].clientX;
-      const deltaX = currentX - startX;
-      container.style.transform = `translateX(${deltaX < 0 ? Math.max(deltaX, -window.innerWidth) : Math.min(deltaX, 0)}px)`;
+      let dx = currentX - startX;
+      wrapper.style.transform = `translateX(${dx > 0 ? 0 : dx}px)`;
     });
 
-    container.addEventListener('touchend', (e) => {
+    wrapper.addEventListener('touchend', e => {
       isDragging = false;
-      container.style.transition = 'transform 0.3s ease';
-      const deltaX = currentX - startX;
+      wrapper.style.transition = 'transform 0.4s ease';
 
-      if (Math.abs(deltaX) > window.innerWidth / 3) {
-        container.style.transform = deltaX < 0 ? 'translateX(-100vw)' : 'translateX(0)';
+      if (currentX - startX < -threshold) {
+        wrapper.style.transform = 'translateX(-100vw)';
       } else {
-        // Snap back
-        const isSecondPage = container.style.transform.includes('-100vw');
-        container.style.transform = isSecondPage ? 'translateX(-100vw)' : 'translateX(0)';
+        wrapper.style.transform = 'translateX(0)';
       }
     });
+
+    // Weather
+    const apiKey = '412d25f1d4a2f451901897d424771ba8'; // <<< Replace this with your OpenWeatherMap API key
+    const city = 'Derby'; // Change to your preferred location
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`)
+      .then(res => res.json())
+      .then(data => {
+        const temp = Math.round(data.main.temp);
+        const desc = data.weather[0].description;
+        document.getElementById('weather').textContent = `${temp}°C`;
+        document.getElementById('description').textContent = desc.charAt(0).toUpperCase() + desc.slice(1);
+      })
+      .catch(err => {
+        document.getElementById('weather').textContent = 'Failed';
+        console.error(err);
+      });
   </script>
 </body>
 </html>
